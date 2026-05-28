@@ -425,7 +425,7 @@ mpdf-->
                 {% for invoiceLineItem in entries %}
                     <!-- CONTENT_PART -->
                     <tr>
-                        <td class="date-column text-nowrap">{{ invoiceLineItem['entry.begin']|date('Y/m/d') }}</td>
+                        <td class="date-column text-nowrap">{{ invoiceLineItem['entry.begin']|date_short }}</td>
                         <td class="description">
                             {% if invoiceLineItem['entry.description'] is not empty %}
                                 {{ invoiceLineItem['entry.description']|nl2br }}
