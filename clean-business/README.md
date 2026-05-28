@@ -9,7 +9,7 @@ The template does not render `invoice['template.title']` or `invoice['customer.n
 You can customize this template by overriding variables or blocks from another invoice template.
 
 ```twig
-{% extends '@invoice/clean-business-invoice.pdf.twig' %}
+{% extends '@invoice/clean-business.pdf.twig' %}
 
 {% set accentColor = '#111111' %}
 {% set mutedColor = '#666666' %}

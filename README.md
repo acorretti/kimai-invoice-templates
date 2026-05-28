@@ -9,7 +9,7 @@ Default Kimai invoice templates can be found [in the core repository here](https
 ### PDF
 
 - [DIN 5008 compliant template](din5008-invoice)
-- [Clean business invoice](clean-business-invoice)
+- [Clean business](clean-business)
 - [Invoice grouped by projects](grouped-by-projects)
 - [New Zealand invoice templates](nz-pdf)
 
