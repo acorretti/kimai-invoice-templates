@@ -483,7 +483,7 @@ mpdf-->
 
                         <tr>
                             <td></td>
-                            <td class="project-total t-left">Zwischensumme:</td>
+                            <td class="project-total t-left">{{ 'invoice.subtotal'|trans }}:</td>
                             <td class="project-total t-nowrap t-center">{{ totalDuration|duration }}</td>
                             <td></td>
                             <td class="project-total t-nowrap t-right">{{ totalAmount|money(invoice['invoice.currency']) }}</td>
