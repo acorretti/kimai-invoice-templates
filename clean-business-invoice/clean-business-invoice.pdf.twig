@@ -1,0 +1,488 @@
+{%- set logoUrl = logoUrl|default(config('theme.branding.logo')) -%}
+{%- set accentColor = accentColor|default('#1a1a1a') -%}
+{%- set mutedColor = mutedColor|default('#737373') -%}
+{%- set ruleColor = ruleColor|default('#e5e5e5') -%}
+{%- set softColor = softColor|default('#f7f7f7') -%}
+{%- set fontFamily = fontFamily|default("-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif") -%}
+{%- set headingFontFamily = headingFontFamily|default("Georgia, 'Times New Roman', serif") -%}
+{%- set showFoldHoleMarks = showFoldHoleMarks ?? false -%}
+{%- set customerName = invoice['customer.company']|default(invoice['customer.name']) -%}
+{%- set customerAddress = invoice['customer.address']|default('') -%}
+{%- set templateAddress = invoice['template.address']|default('')|trim -%}
+<!DOCTYPE html>
+<html lang="{{ invoice['invoice.language'] }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{{ invoice['invoice.number'] }}-{{ customerName|u.snake }}{% endblock %}</title>
+    {% block invoice_styles %}
+        <style type="text/css">
+            @page {
+                margin: 34mm 18mm 28mm 18mm;
+                header: html_invoice_header;
+                footer: html_invoice_footer;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                color: {{ accentColor }};
+                font-family: {{ fontFamily|raw }};
+                font-size: 10pt;
+                line-height: 1.42;
+            }
+
+            table {
+                border-collapse: collapse;
+            }
+
+            address {
+                font-style: normal;
+            }
+
+            .header {
+                width: 100%;
+                padding-top: 10mm;
+                border-bottom: 1px solid {{ ruleColor }};
+            }
+
+            .header td {
+                padding: 0 0 5mm 0;
+                vertical-align: middle;
+            }
+
+            .header-logo {
+                width: 22mm;
+                padding-right: 5mm;
+            }
+
+            .header-logo-image {
+                display: block;
+                height: 16mm;
+                width: auto;
+            }
+
+            .header-company {
+                font-size: 8.8pt;
+                line-height: 1.35;
+            }
+
+            .header-company strong {
+                display: block;
+                margin-bottom: 1mm;
+                font-size: 11pt;
+                font-weight: 650;
+            }
+
+            .header-invoice-number {
+                width: 46mm;
+                color: {{ mutedColor }};
+                font-family: {{ fontFamily|raw }};
+                font-size: 8.5pt;
+                text-align: right;
+                vertical-align: bottom;
+            }
+
+            .footer {
+                width: 100%;
+                padding-top: 5mm;
+                color: {{ mutedColor }};
+                font-size: 7.8pt;
+                line-height: 1.35;
+                border-top: 1px solid {{ ruleColor }};
+            }
+
+            .footer td {
+                padding: 0 5mm 0 0;
+                vertical-align: top;
+            }
+
+            .footer-company {
+                width: 30%;
+            }
+
+            .footer-contact {
+                width: 20%;
+            }
+
+            .footer-payment {
+                width: auto;
+                white-space: nowrap;
+            }
+
+            .footer-pages {
+                width: 12%;
+                padding-right: 0;
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            .fold_mark {
+                position: absolute;
+                left: 0;
+                width: 5mm;
+                border-bottom: 1px solid #cccccc;
+            }
+
+            .fold_mark_1 {
+                top: 105mm;
+            }
+
+            .fold_mark_2 {
+                top: 210mm;
+            }
+
+            .hole_mark {
+                position: absolute;
+                left: 0;
+                top: 50%;
+                width: 10mm;
+                border-bottom: 2px solid #cccccc;
+            }
+
+            .lede {
+                width: 100%;
+                margin: 0 0 18mm 0;
+            }
+
+            .lede td {
+                vertical-align: top;
+            }
+
+            .recipient {
+                width: 52%;
+                padding-right: 10mm;
+                font-size: 10.5pt;
+                line-height: 1.45;
+            }
+
+            .recipient strong {
+                font-size: 12pt;
+                font-weight: 650;
+            }
+
+            .meta {
+                width: 48%;
+                padding: 5mm;
+                background: {{ softColor }};
+            }
+
+            .meta-title {
+                margin: 0 0 5mm 0;
+                font-family: {{ headingFontFamily|raw }};
+                font-size: 22pt;
+                font-weight: 400;
+                line-height: 1;
+                letter-spacing: 0;
+                white-space: nowrap;
+            }
+
+            .meta-table {
+                width: 100%;
+                font-size: 9pt;
+                line-height: 1.35;
+            }
+
+            .meta-table th,
+            .meta-table td {
+                padding: 1.2mm 0;
+                border-top: 1px solid {{ ruleColor }};
+                vertical-align: top;
+            }
+
+            .meta-table th {
+                width: 45%;
+                color: {{ mutedColor }};
+                font-weight: 400;
+                text-align: left;
+            }
+
+            .meta-table td {
+                text-align: right;
+            }
+
+            .customer-note,
+            .paymentTerms {
+                margin: 0 0 8mm 0;
+                padding: 4mm 5mm;
+                color: {{ mutedColor }};
+                border-left: 1.5pt solid {{ accentColor }};
+                background: {{ softColor }};
+            }
+
+            .customer-note p,
+            .paymentTerms p {
+                margin: 0;
+            }
+
+            .items {
+                width: 100%;
+                margin: 0;
+                font-size: 9.2pt;
+                line-height: 1.35;
+            }
+
+            .items thead {
+                display: table-header-group;
+            }
+
+            .items th {
+                padding: 2.5mm 2mm;
+                color: {{ mutedColor }};
+                font-weight: 600;
+                text-align: left;
+                border-bottom: 1px solid {{ accentColor }};
+            }
+
+            .items td {
+                padding: 3mm 2mm;
+                vertical-align: top;
+                border-bottom: 1px solid {{ ruleColor }};
+            }
+
+            .items tbody tr:nth-child(even) td {
+                background: {{ softColor }};
+            }
+
+            .items tfoot td {
+                padding: 2mm 2mm;
+                border-bottom: 0;
+                background: #ffffff;
+            }
+
+            .items tfoot tr:first-child td {
+                padding-top: 4mm;
+            }
+
+            .items .total-row td {
+                padding-top: 3mm;
+                font-size: 11pt;
+                font-weight: 650;
+                border-top: 1px solid {{ accentColor }};
+            }
+
+            .text-right {
+                text-align: right;
+            }
+
+            .text-nowrap {
+                white-space: nowrap;
+            }
+
+            .description {
+                width: 46%;
+            }
+
+            .date-column {
+                width: 17%;
+            }
+
+            .money-column {
+                width: 15%;
+            }
+
+            .amount-column {
+                width: 10%;
+            }
+
+            .tax-note {
+                margin: 6mm 0 0 0;
+                color: {{ mutedColor }};
+                font-size: 8.5pt;
+            }
+        </style>
+    {% endblock %}
+</head>
+<body>
+<!--mpdf
+<htmlpageheader name="invoice_header">
+    {% block header %}
+        <table class="header" cellpadding="0" cellspacing="0" width="100%" border="0">
+            <tr>
+                {% block header_logo %}
+                    {% if logoUrl %}
+                        <td class="header-logo">
+                            <img src="{{ logoUrl }}" class="header-logo-image" alt="" />
+                        </td>
+                    {% endif %}
+                {% endblock %}
+                {% block header_company %}
+                    <td class="header-company">
+                        <strong>{{ invoice['template.company'] }}</strong>
+                        {{ templateAddress|nl2str(' &bull; ') }}
+                    </td>
+                {% endblock %}
+                {% block header_invoice_number %}
+                    <td class="header-invoice-number">
+                        {{ invoice['invoice.number'] }}
+                    </td>
+                {% endblock %}
+            </tr>
+        </table>
+        {% if showFoldHoleMarks %}
+            {% block header_fold_hole_marks %}
+                <div class="fold_mark fold_mark_1"></div>
+                <div class="hole_mark"></div>
+                <div class="fold_mark fold_mark_2"></div>
+            {% endblock %}
+        {% endif %}
+    {% endblock %}
+</htmlpageheader>
+<htmlpagefooter name="invoice_footer">
+    {% block footer %}
+        <table class="footer" cellpadding="0" cellspacing="0" width="100%" border="0">
+            <tr>
+                {% block footer_address %}
+                    <td class="footer-company">
+                        <strong>{{ invoice['template.company'] }}</strong>
+                        {% if invoice['template.vat_id'] is not empty %}
+                            <br>{{ 'vat_id'|trans }}: {{ invoice['template.vat_id'] }}
+                        {% endif %}
+                    </td>
+                {% endblock %}
+                {% block footer_contact %}
+                    <td class="footer-contact">
+                        {{ invoice['template.contact']|nl2br }}
+                    </td>
+                {% endblock %}
+                {% block footer_payment_details %}
+                    <td class="footer-payment">
+                        {{ invoice['template.payment_details']|nl2br }}
+                    </td>
+                {% endblock %}
+                {% block footer_page_numbers %}
+                    <td class="footer-pages">
+                        {{ 'export.page_of'|trans({'%page%': '{PAGENO}', '%pages%': '{nb}'}) }}
+                    </td>
+                {% endblock %}
+            </tr>
+        </table>
+    {% endblock %}
+</htmlpagefooter>
+mpdf-->
+{% block invoice_lede %}
+    <table class="lede" cellpadding="0" cellspacing="0" width="100%" border="0">
+        <tr>
+            {% block invoice_address_recipient %}
+                <td class="recipient">
+                    <address>
+                        <strong>{{ customerName }}</strong><br>
+                        {% if invoice['customer.contact'] %}
+                            {{ invoice['customer.contact'] }}<br>
+                        {% endif %}
+                        {{ customerAddress|nl2br }}
+                        {% set customerCountry = invoice['customer.country']|country_name(invoice['invoice.language']) %}
+                        {% if customerCountry not in customerAddress %}
+                            <br>{{ customerCountry }}
+                        {% endif %}
+                        {% if invoice['customer.vat_id'] is not empty %}
+                            <br>{{ 'vat_id'|trans }}: {{ invoice['customer.vat_id'] }}
+                        {% endif %}
+                    </address>
+                </td>
+            {% endblock %}
+            {% block invoice_details %}
+                <td class="meta">
+                    <h1 class="meta-title">{{ 'invoice'|trans|capitalize }}&nbsp;{{ invoice['invoice.number'] }}</h1>
+                    <table class="meta-table" cellpadding="0" cellspacing="0" width="100%" border="0">
+                        <tr>
+                            <th>{{ 'date'|trans }}</th>
+                            <td>{{ invoice['invoice.date'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ 'invoice.due_days'|trans }}</th>
+                            <td>{{ invoice['invoice.due_date'] }}</td>
+                        </tr>
+                        {% if invoice['query.project.order_number'] is defined and invoice['query.project.order_number'] is not empty %}
+                            <tr>
+                                <th>{{ 'orderNumber'|trans }}</th>
+                                <td>{{ invoice['query.project.order_number'] }}</td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                </td>
+            {% endblock %}
+        </tr>
+    </table>
+{% endblock %}
+
+{% block invoice_content %}
+    {% if invoice['customer.invoice_text'] is not empty %}
+        <div class="customer-note">{{ invoice['customer.invoice_text']|md2html }}</div>
+    {% endif %}
+
+    {% block invoice_content_items %}
+        <table class="items" cellpadding="0" cellspacing="0" width="100%" border="0">
+            <thead>
+                <tr>
+                    <th class="date-column">{{ 'date'|trans }}</th>
+                    <th class="description">{{ 'description'|trans }}</th>
+                    <th class="money-column text-right text-nowrap">{{ 'unit_price'|trans }}</th>
+                    <th class="amount-column text-right text-nowrap">{{ 'amount'|trans }}</th>
+                    <th class="money-column text-right text-nowrap">{{ 'total_rate'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoiceLineItem in entries %}
+                    <!-- CONTENT_PART -->
+                    <tr>
+                        <td class="date-column text-nowrap">{{ invoiceLineItem['entry.begin']|date('Y/m/d') }}</td>
+                        <td class="description">
+                            {% if invoiceLineItem['entry.description'] is not empty %}
+                                {{ invoiceLineItem['entry.description']|nl2br }}
+                            {% else %}
+                                {% if invoiceLineItem['entry.activity'] is defined %}
+                                    {{ invoiceLineItem['entry.activity'] }} /
+                                {% endif %}
+                                {{ invoiceLineItem['entry.project'] }}
+                            {% endif %}
+                        </td>
+                        <td class="money-column text-right text-nowrap">{{ invoiceLineItem['entry.rate'] }}</td>
+                        <td class="amount-column text-right text-nowrap">{{ invoiceLineItem['entry.amount'] }}</td>
+                        <td class="money-column text-right text-nowrap">{{ invoiceLineItem['entry.total'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-right">{{ 'invoice.subtotal'|trans }}</td>
+                    <td class="text-right text-nowrap">{{ invoice['invoice.subtotal'] }}</td>
+                </tr>
+                {% for taxRow in invoice['invoice.tax_rows'] %}
+                    {% if taxRow['show'] %}
+                        <tr>
+                            <td colspan="4" class="text-right">
+                                {{ taxRow['name']|trans }} ({{ taxRow['rate'] }}%)
+                                {% if taxRow['note'] is not null %}
+                                    <sup>[{{ taxRow['counter'] }}]</sup>
+                                {% endif %}
+                            </td>
+                            <td class="text-right text-nowrap">{{ taxRow['amount']|money(taxRow['currency']) }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="4" class="text-right">{{ 'invoice.total'|trans }}</td>
+                    <td class="text-right text-nowrap">{{ invoice['invoice.total'] }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    {% endblock %}
+
+    {% block invoice_tax_notes %}
+        {% for taxRow in invoice['invoice.tax_rows'] %}
+            {% if taxRow['note'] is not null %}
+                <p class="tax-note"><sup>[{{ taxRow['counter'] }}]</sup> {{ taxRow['note']|trans }}</p>
+            {% endif %}
+        {% endfor %}
+    {% endblock %}
+
+    {% block payment_terms %}
+        {% if invoice['template.payment_terms'] is not empty %}
+            <div class="paymentTerms">
+                {{ invoice['template.payment_terms']|md2html }}
+            </div>
+        {% endif %}
+    {% endblock %}
+{% endblock %}
+</body>
+</html>
