@@ -11,6 +11,8 @@ Default Kimai invoice templates can be found [in the core repository here](https
 - [DIN 5008 compliant template](din5008-invoice)
 - [Clean business](clean-business)
 - [Hola ES](hola-es)
+- [Hola CA](hola-ca)
+- [Hola EN](hola-en)
 - [Invoice grouped by projects](grouped-by-projects)
 - [New Zealand invoice templates](nz-pdf)
 
